@@ -1,0 +1,122 @@
+How to Bejeweled:
+
+
+start with a group of arrays representing columns on the board. Values start from the bottom number and end at the top.
+
+for simplicity, lets use a board that looks like this:
+
+01 05 09 13
+02 06 10 14
+03 07 11 15
+04 08 12 16
+
+arrays would go:
+col1 = [04, 03, 02, 01]
+col2 = [08, 07, 06, 05]
+col3 = [12, 11, 10, 09]
+col4 = [16, 15, 14, 13]
+
+Note that the actual, graphical items on the board are indirectly tied to these arrays, not directly.
+Operations:
+switch(a, b):
+  - used for two items next to each other, vertically or horizontally.
+  - Implementation: directly reassign items. So, to switch out 14 and 15: first = col4[1], col4[1] = col4[2], col4[2] = first
+  - using this function ends a turn
+
+checkMatches:
+  - called at end of turn. checks for 3 equal items vertically or horizontally. to do this:
+    - iterate through each point.
+    - if item below is equal to current, check if third item is also equal.
+    - if it is, continue checking until either end of column or until non-match shows up. then continue from next item (first non-matching or top of row).
+    - iterate again through points, this time checking items to the right.
+  - at end of check, converts involved items (based on array) to nulls.
+  - any arrays that have nulls get new random items added to the end for each null.
+  - save this data (including nulls) to a var, and it should help when rendering items falling.
+  - also add the number of removed items to the score (or do additional calculations, depending on how score is calculated.)
+  - call updateDisplay around here
+  - to get final data, simply remove all nulls from column arrays
+  - once all animations are done, call this function recursively until no matches come up. recursion will be your friend in this game, in general.
+  - when no matches come up, run checkPossibleMatches
+  - note: put the actual checking of matches part of this into a helper function, so it can be used below.
+checkPossibleMatches:
+  - checks to see if there are any possible matches to be made. Trying to think if there's a smarter way to do this, but if not...
+  - run the checkMatches helper for each possible move on the board.
+  - there are probably some moves you can eliminate if not much of the board has changed, but there are enough edge cases and the board is going to be relatively small enough that this is likely not useful.
+  - if there are no matches to be found, the game ends.
+  - otherwise, the game continues. keep one of the possible moves to show the player if a few seconds go by without them making a move.
+  - this part may suck. as will the next part...
+
+update display:
+  - this is what controls what is actually on the board. data recieved may look like:
+
+col1 = [🅰, ❌, ❌, ❌, 🅿, ✅, 🔲, ✅, 🅰]
+col2 = [✅, 🅿, 🔲, ✅, ✅, 🅿]
+col3 = [🅿, 🔲, 🅿, 🅰, 🅿, 🅰]
+col4 = [🅰, ✅, 🅿, 🔲, 🔲, 🅰]
+col5 = [🅿, 🅿, 🔲, 🅰, 🔲, 🔲]
+col6 = [🅰, ✅, ✅, 🔲, ✅, ✅]
+
+(❌ represents null)
+a more complicated case:
+
+col1 = [🅰, ❌, ❌, ❌, 🅿, ❌, ✅, 🔲, ✅, 🅰]
+col2 = [✅, ❌, 🅿, 🔲, ✅, ❌, ✅, 🅿]
+col3 = [🅿, ❌, 🔲, 🅿, 🅰, ❌, 🅿, 🅰]
+col4 = [🅰, ✅, 🅿, 🔲, 🔲, 🅰]
+col5 = [🅿, 🅿, 🔲, 🅰, 🔲, 🔲]
+col6 = [🅰, ✅, ✅, 🔲, ✅, ✅]
+  - render all items on the board, showing all nulls as empty space, then move everything "down" (towards the beginning of the array) until all empty spaces are filled. 
+  - things currently above the board are not shown, so above example would look like this:
+
+   🅰
+   ✅
+   🔲🅿🅰
+   ✅✅🅿
+   _______________
+   ❌❌❌🅰🔲✅
+   🅿✅🅰🔲🔲✅
+   ❌🔲🅿🔲🅰🔲
+   ❌🅿🔲🅿🔲✅
+   ❌❌❌✅🅿✅
+   🅰✅🅿🅰🅿🅰
+
+
+  - this... may be more difficult than it looks.
+  - current plan: render out two canvasses - a fixed one, and a moving one (fixed one won't be updated until a block stops, moving one will be updated every frame).
+  - starting fixed canvas is everything below a row's first blank space. so, fixed canvas for the second example above:
+
+
+   🔳🔳🔳🅰🔲✅
+   🔳🔳🔳🔲🔲✅
+   🔳🔳🔳🔲🅰🔲
+   🔳🔳🔳🅿🔲✅
+   🔳🔳🔳✅🅿✅
+   🅰✅🅿🅰🅿🅰
+
+   (🔳 = blank space)
+   moving canvas would look like:
+
+
+   🅰
+   ✅
+   🔲🅿🅰
+   ✅✅🅿
+   🔳🔳🔳🔳🔳🔳
+   🅿✅🅰🔳🔳🔳
+   🔳🔲🅿🔳🔳🔳
+   🔳🅿🔲🔳🔳🔳
+   🔳🔳🔳🔳🔳🔳
+   🔳🔳🔳🔳🔳🔳
+
+  - All objects on a canvas are rendered iteratively. Move the canvas "down" by lowering the y position of each item every frame for as long as it takes to move the whole thing down one space.
+  - Check to see if any squares are where they should be on the fixed canvas. If they are, remove them from the moving canvas and render them on the fixed one.
+  - Continue until everything is off the moving canvas. For the above example, would look like this:
+
+   🅰🅿🅰🅰🔲✅
+   ✅✅🅿🔲🔲✅
+   🔲✅🅰🔲🅰🔲
+   ✅🔲🅿🅿🔲✅
+   🅿🅿🔲✅🅿✅
+   🅰✅🅿🅰🅿🅰
+
+   - and that's it. congrats.

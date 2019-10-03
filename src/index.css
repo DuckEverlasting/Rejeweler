@@ -1,0 +1,235 @@
+body {
+    background: rgb(148, 148, 148);
+    margin: 0;
+    width: 100%;
+}
+audio {
+    display: none;
+}
+.app {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    margin-top: 50px;
+    font-family: 'Teko', sans-serif;
+}
+.canvas-wrapper {
+    position: relative;
+    width: 640px;
+    height: 640px;
+    border: 10px solid rgb(0, 0, 63);
+    border-radius: 20px;
+    background-color: rgb(0, 73, 6);
+    box-shadow: 0px 0px 12px 0px;
+    outline: none;
+    overflow: hidden;
+}
+.hidden {
+    visibility: hidden;
+}
+.overlay {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 250px;
+    position: absolute;
+    background: rgba(0, 49, 68, 0.8);
+    width: 640px;
+    height: 640px;
+    user-select: none;
+    z-index: 6;
+}
+.overlay-innerbox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(
+        rgba(0, 0, 41, 0),
+        rgb(0, 0, 41) 2%,
+        rgb(0, 0, 63) 20%,
+        rgb(0, 0, 63) 80%,
+        rgb(0, 0, 41) 98%,
+        rgba(0, 0, 41, 0)
+    );
+    padding: 30px 0 40px;
+    box-shadow: 10px, 20px, 30px, rgb(0, 0, 0);
+}
+.overlay-innerbox p {
+    color: white;
+    font-size: 80px;
+    letter-spacing: 1px;
+    margin: 0;
+}
+.overlay-innerbox button {
+    padding: 7px 40px;
+    margin: 0;
+    border: 1px solid rgb(0, 0, 63);
+    font: 24px 'Share Tech Mono', monospace;
+    letter-spacing: -1px;
+    color: rgb(228, 228, 228);
+
+    background-color: rgb(0, 73, 6);
+    background-image: linear-gradient(rgb(0, 136, 11), rgba(0, 161, 13, 0));
+
+    transition: background-color 0.2s ease-out;
+    border-radius: 10px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 2px 2px -1px rgba(0, 0, 0, 0.5),
+        0 1px 0 rgba(255, 255, 255, 0.3) inset;
+    text-shadow: 0 1px 2px rgba(80, 80, 80, 0.9);
+
+    outline: none;
+    user-select: none;
+    cursor: pointer;
+}
+
+.overlay-innerbox button:hover {
+    background-color: rgb(0, 88, 7);
+}
+
+.overlay-innerbox button:active {
+    position: relative;
+    top: 1px;
+    text-shadow: none;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3) inset;
+}
+
+#canvas-fx {
+    position: absolute;
+    z-index: 5;
+    pointer-events: none;
+}
+#canvas-1 {
+    position: absolute;
+    background: transparent;
+    z-index: 4;
+}
+#canvas-2 {
+    position: absolute;
+    z-index: 3;
+}
+#canvas-3 {
+    position: absolute;
+    z-index: 2;
+}
+#canvas-bg {
+    position: absolute;
+    z-index: 1;
+}
+.scorecard {
+    background: rgb(236, 236, 236);
+    border-radius: 20px;
+    box-shadow: 0px 0px 8px 0px;
+    width: 160px;
+    margin: 10px 20px;
+    padding: 10px 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 24px;
+    letter-spacing: -2px;
+    user-select: none;
+}
+.scorecard span {
+    padding-left: 10px;
+}
+.toggle {
+    position: relative;
+    width: 150px;
+    margin: 25px;
+}
+.toggle-checkbox {
+    display: none;
+}
+.toggle-label {
+    display: block;
+    overflow: hidden;
+    cursor: pointer;
+    border: 4px solid #00003f;
+    border-radius: 50px;
+}
+.toggle-inner {
+    display: block;
+    width: 200%;
+    margin-left: -100%;
+    transition: margin 0.3s ease-in 0s;
+}
+.toggle-inner:before,
+.toggle-inner:after {
+    display: block;
+    float: left;
+    width: 50%;
+    height: 24px;
+    padding: 0;
+    line-height: 24px;
+    font-size: 18px;
+    color: white;
+    font-family: Trebuchet, Arial, sans-serif;
+    font-weight: bold;
+    box-sizing: border-box;
+}
+.toggle-inner:before {
+    padding-left: 12px;
+    background-color: #1f607a;
+    color: #ffffff;
+}
+.toggle-inner:after {
+    padding-right: 12px;
+    background-color: #e4e4e4;
+    color: #00003f;
+    text-align: right;
+}
+.music-switch .toggle-inner:before {
+    content: 'MUSIC ON';
+}
+.music-switch .toggle-inner:after {
+    content: 'MUSIC OFF';
+}
+.sfx-switch .toggle-inner:before {
+    content: 'SFX ON';
+    padding-left: 20px;
+}
+.sfx-switch .toggle-inner:after {
+    content: 'SFX OFF';
+    padding-right: 20px;
+}
+.toggle-switch {
+    display: block;
+    width: 31px;
+    margin: -3.5px;
+    background: #e4e4e4;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 123px;
+    border: 4px solid #00003f;
+    border-radius: 50px;
+    transition: all 0.3s ease-in 0s;
+}
+.toggle-checkbox:checked + .toggle-label .toggle-inner {
+    margin-left: 0;
+}
+.toggle-checkbox:checked + .toggle-label .toggle-switch {
+    right: 0px;
+}
+
+.instructions {
+    background: rgb(236, 236, 236);
+    border-radius: 20px;
+    box-shadow: 0px 0px 8px 0px;
+    width: 160px;
+    margin: 30px 20px;
+    padding: 5px 20px;
+    text-align: center;
+    font-family: 'Teko', sans-serif;
+    font-size: 20px;
+}
+
+.instructions h3 {
+    font-size: 24px;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+.instructions p {
+    margin: 18px 0;
+}
+.load-images {
+    visibility: hidden;
+}

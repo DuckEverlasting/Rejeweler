@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <link rel="stylesheet" href="index.css">
+
+  <title>Rejeweler</title>
+</head>
+<body>
+  <div class="app">
+    <div class="options">
+      <div class="toggle">
+          <input onclick={toggleMusic()} type="checkbox" name="toggle" class="toggle-checkbox" id="music-switch" checked>
+          <label class="toggle-label music-switch" for="music-switch">
+              <span class="toggle-inner"></span>
+              <span class="toggle-switch"></span>
+          </label>
+      </div>
+      <div class="toggle">
+          <input onclick={toggleSfx()} type="checkbox" name="toggle" class="toggle-checkbox" id="sfx-switch" checked>
+          <label class="toggle-label sfx-switch" for="sfx-switch">
+              <span class="toggle-inner"></span>
+              <span class="toggle-switch"></span>
+          </label>
+      </div>
+      <button id="debug-button">DEBUG</button>
+      <button id="debug-button-2">STATE</button>
+    </div>
+    <div tabindex="0" class="canvas-wrapper">
+      <div class="overlay game-over">
+        <div class="overlay-innerbox">
+          <p>REJEWELER</p>
+          <button onClick={start()}>START</button>
+        </div>
+      </div>
+      <canvas id="canvas-fx" ></canvas>
+      <canvas id="canvas-1" ></canvas>
+      <canvas id="canvas-2" ></canvas>
+      <canvas id="canvas-3" ></canvas>
+      <canvas id="canvas-bg" ></canvas>
+    </div>
+    <div>
+      <p class="scorecard score">Score:<span id="score-counter"></span></p>
+    </div>
+  </div>
+</body>
+<script src="./js/main.js"></script>
+</html>
