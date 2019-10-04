@@ -13,7 +13,7 @@ const colorHues = {
     yellow: 64,
     blue: 240,
     green: 120,
-    purple: 278,
+    purple: 265,
     orange: 29,
     teal: 180
 }
@@ -28,6 +28,10 @@ class Tile {
         this.x = x;
         this.y = y;
         this.color = color;
+    }
+
+    change() {
+        this.color = getColor(5)
     }
 }
 
@@ -68,7 +72,7 @@ class Column {
         });
     }
 
-    append(amount = this.nulls, selectionSize = 5) {
+    append(amount = this.nulls, selectionSize = 7) {
         const addition = [];
         for (let i = 0; i < amount; i++) {
             addition.push(
@@ -262,20 +266,23 @@ class ShatterParticle {
         y: -15 + Math.random() * 30
     };
 
-    speedAcceleration = .85
-
+    acceleration = {
+        x: .85,
+        y: .85
+    };
+    
     // Size our particle
-    radius = 5 + Math.random() * 5;
+    radius = 2 + Math.random() * 2;
 
     // Set color variance
-    hueVariance = 30
+    hueVariance = 20
 
     // Set a max time to live for our particle
     life = 25 + Math.random() * 15;
     remainingLife = this.life;
 
     // Set size change over time (growth or deteriation)
-    sizeChange = -this.radius / this.life
+    sizeChange = -(this.radius / this.life)
 
     sizeAcceleration = 1
 
@@ -288,15 +295,26 @@ class ShatterParticle {
             ctx.beginPath();
             ctx.arc(p.startX, p.startY, p.radius, 0, Math.PI * 2);
             ctx.fillStyle = `hsl(${p.hue}, 100%, 50%)`;
+            ctx.shadowColor = `hsl(${p.hue}, 100%, 50%)`;
+            ctx.shadowBlur = 25;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
             ctx.fill();
-            
+            ctx.closePath();
+            ctx.beginPath();
+            ctx.arc(p.startX, p.startY, p.radius / 1.5, 0, Math.PI * 2);
+            ctx.fillStyle = `hsl(${p.hue}, 100%, 70%)`;
+            ctx.shadowColor = `hsl(${p.hue}, 100%, 70%)`;
+            ctx.shadowBlur = 10;
+            ctx.fill();
+
             // Update the particle's location and life
             p.remainingLife--;
             p.radius += p.sizeChange;
             p.startX += p.speed.x;
             p.startY += p.speed.y;
-            p.speed.x *= p.speedAcceleration;
-            p.speed.y *= p.speedAcceleration;
+            p.speed.x *= p.acceleration.x;
+            p.speed.y *= p.acceleration.y;
             p.sizeChange *= p.sizeAcceleration;
         }
     }
@@ -372,6 +390,7 @@ let toggleFall = false;
 let stopFall;
 let toggleSwitch = false;
 let stopSwitch;
+let colorChange = false;
 let loseCondition = false;
 let score = 0;
 let musicMute = false;
@@ -495,7 +514,7 @@ function renderBg() {
         for (let y = 0; y < boardRows; y++) {
             cbg.beginPath();
             cbg.rect(x * unit, y * unit, unit, unit);
-            cbg.fillStyle = (x + y) % 2 === 0 ? '#948b79' : '#b0a590';
+            cbg.fillStyle = (x + y) % 2 === 0 ? '#303030' : '#1a1a1a';
             cbg.fill();
         }
     }
@@ -539,11 +558,21 @@ function gameOver() {
 
 //// Handle input ////
 canvas1.addEventListener('click', function(ev) {
-    if (toggleFall) return;
+    if (toggleFall || toggleClear || toggleSwitch) return;
 
     x = Math.floor(ev.offsetX / unit);
     y = Math.floor((canvas1.height - ev.offsetY) / unit);
     startTurn(x, y);
+});
+
+canvas1.addEventListener('contextmenu', function(ev) {
+    ev.preventDefault()
+    if (!colorChange) return;
+
+    x = Math.floor(ev.offsetX / unit);
+    y = Math.floor((canvas1.height - ev.offsetY) / unit);
+    board.tile(x, y).change();
+    renderFixed();
 });
 
 function startTurn(x, y) {
@@ -570,6 +599,7 @@ function clearTiles() {
     renderFixed();
     renderFalling();
     if (matches.length) {
+        incrementScore(matches.length * matches.length)
         startAnimateClear(
             () => startAnimateFall(clearTiles), matches
         )        
@@ -636,8 +666,8 @@ function startAnimateSwitch(callback, x, y, firstPass=true) {
 
 function startAnimateClear(callback, matches) {
     toggleClear = true;
-    let particlesPerTile = 50;
-    // let counter = 0; // used to call callback function early
+    let particlesPerTile = 40;
+    let counter = 0; // used to call callback function early
     let particles = [];
 
     for(let i = 0; i < matches.length; i++) {
@@ -661,6 +691,10 @@ function startAnimateClear(callback, matches) {
         // Clear out the old particles
         cfx.clearRect(0, 0, canvasFx.width, canvasFx.height);
 
+        if (counter == 15) {
+            callback();
+        }
+
         // Draw all of our particles in their new location
         for(let i = 0; i < particles.length; i++) {
             particles[i].draw(cfx);
@@ -672,11 +706,10 @@ function startAnimateClear(callback, matches) {
                     particles = [];
                     cancelAnimationFrame(stopSwitch);
                     toggleClear = false;
-                    callback();
                 }
             }
         }        
-        // counter++;
+        counter++;
         
     }
 }
@@ -701,7 +734,8 @@ function startAnimateFall(callback, tileArray = board.getFalling(), fixedTileArr
         });
         triggerFixed = false;
         tileArray = tileArray.filter(tile => {
-            if (tile.y <= floor[tile.x]) {
+            if (tile.y <= floor[tile.x] + 0.1) {
+                tile.y = Math.floor(tile.y)
                 fixedTileArray.push(tile);
                 floor[tile.x]++
                 triggerFixed = true;
@@ -719,6 +753,7 @@ function startAnimateFall(callback, tileArray = board.getFalling(), fixedTileArr
             );
         });
         if (triggerFixed) {
+            console.log("DING")
             renderFixed(fixedTileArray);
         }
     }
@@ -731,15 +766,32 @@ debugButton.addEventListener('click', ev => {
 
 debugButton.addEventListener('contextmenu', ev => {
     ev.preventDefault();
-    renderFixed();
+    colorChange = true;
 });
 
 debugButton2.addEventListener('click', ev => {
     ev.preventDefault();
     console.log(
-        'STATE:\n', 'unit:', unit, '\n', 'boardRows:', boardRows, '\n', 'boardCols:', boardCols, '\n', 'gameStarted:', 
-        gameStarted, '\n', 'paused:', paused, '\n', 'toggleFall:', toggleFall, '\n', 'stopFall:', stopFall, '\n', 'loseCondition:', 
-        loseCondition, '\n', 'score:', score, '\n', 'musicMute:', musicMute, '\n', 'sfxMute:', sfxMute, '\n', 'board:', board, '\n', 
-        'selected:', selected, '\n', 'fallingTiles:', fallingTiles, '\n', 'fixedTiles:', fixedTiles, '\n'
+        'STATE:\n',
+        'unit:', unit, '\n',
+        'boardRows:', boardRows, '\n',
+        'boardCols:', boardCols, '\n',
+        'gameStarted:', gameStarted, '\n',
+        'paused:', paused, '\n',
+        'toggleClear:', toggleClear, '\n',
+        'stopClear:', stopClear, '\n',
+        'toggleFall:', toggleFall, '\n',
+        'stopFall:', stopFall, '\n',
+        'toggleSwitch:', toggleSwitch, '\n',
+        'stopSwitch:', stopSwitch, '\n',
+        'colorChange:', colorChange, '\n',
+        'loseCondition:', loseCondition, '\n',
+        'score:', score, '\n',
+        'musicMute:', musicMute, '\n',
+        'sfxMute:', sfxMute, '\n',
+        'board:', board, '\n',
+        'selected:', selected, '\n',
+        'fallingTiles:', fallingTiles, '\n',
+        'fixedTiles:', fixedTiles, '\n',
     );
 });
