@@ -17,9 +17,9 @@ audio {
     position: relative;
     width: 640px;
     height: 640px;
-    border: 10px solid rgb(0, 0, 0);
+    border: 10px solid #110133;
     border-radius: 10px;
-    background-color: rgb(0, 73, 6);
+    background-color: #4dd599;
     box-shadow: 0px 0px 5px 0px;
     outline: none;
     overflow: hidden;
@@ -33,7 +33,7 @@ audio {
     justify-content: flex-start;
     padding-top: 250px;
     position: absolute;
-    background: rgba(0, 138, 85, 0.8);
+    background: rgba(88, 88, 88, 0.5);
     width: 640px;
     height: 640px;
     user-select: none;
@@ -43,9 +43,9 @@ audio {
     display: flex;
     flex-direction: column;
     align-items: center;
-    border-top: 10px solid rgb(0, 0, 0);
-    border-bottom: 10px solid rgb(0, 0, 0);
-    background: rgb(43, 9, 87);
+    border-top: 10px solid #110133;
+    border-bottom: 10px solid #110133;
+    background: #1d4d4f;
     padding: 30px 0 40px;
 }
 .overlay-innerbox p {
@@ -57,13 +57,13 @@ audio {
 .overlay-innerbox button {
     padding: 7px 40px;
     margin: 0;
-    border: 1px solid rgb(0, 0, 63);
+    border: 1px solid #110133;
     font: 24px 'Share Tech Mono', monospace;
     letter-spacing: -1px;
     color: rgb(228, 228, 228);
 
-    background-color: rgb(0, 70, 73);
-    background-image: linear-gradient(rgb(0, 136, 118), rgba(0, 161, 13, 0));
+    background-color: rgb(0, 44, 138);
+    background-image: linear-gradient(rgb(16, 104, 163), rgba(0, 161, 13, 0));
 
     transition: background-color 0.2s ease-out;
     border-radius: 10px;
@@ -77,7 +77,7 @@ audio {
 }
 
 .overlay-innerbox button:hover {
-    background-color: rgb(0, 88, 7);
+    background-color: rgb(8, 39, 105);
 }
 
 .overlay-innerbox button:active {
@@ -122,6 +122,9 @@ audio {
 }
 .scorecard span {
     padding-left: 10px;
+}
+.options {
+  width: 160px;
 }
 .toggle {
     position: relative;
