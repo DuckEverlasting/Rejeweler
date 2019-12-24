@@ -16,6 +16,20 @@
 <body>
   <div class="app">
     <div class="options">
+      <button onclick={start()}>Reset Game</button>
+      <label class="diff-select" for="diff-select">Difficulty:
+        <select id="diff-select" onchange={changeDifficulty(this)}>
+          <option value=4>4</option>
+          <option selected value=5>5</option>
+          <option value=6>6</option>
+          <option value=7>7</option>
+        </select>
+      </label>
+      <div class="graphics-select">
+        <p>Graphics:</p>
+        <label for="graphics-low">Low<input onchange={setGraphics(this.value)} id="graphics-low" name="graphics" type="radio" value="low"></label>
+        <label for="graphics-high">High<input onchange={setGraphics(this.value)} checked id="graphics-high" name="graphics" type="radio" value="high"></label>
+      </div>
       <!-- <div class="toggle">
           <input onclick={toggleMusic()} type="checkbox" name="toggle" class="toggle-checkbox" id="music-switch" checked>
           <label class="toggle-label music-switch" for="music-switch">
@@ -46,8 +60,9 @@
       <canvas id="canvas-3" ></canvas>
       <canvas id="canvas-bg" ></canvas>
     </div>
-    <div>
+    <div class="game-data">
       <p class="scorecard score">Score:<span id="score-counter"></span></p>
+      <p class="scorecard high-score">High Score:<span id="high-score-counter"></span></p>
     </div>
   </div>
 </body>

@@ -1,3 +1,31 @@
+///////////////////////// Application State /////////////////////////
+
+let difficulty = 5;
+let nextDifficulty = 5;
+let graphicsLevel = "high";
+let boardRows = 8;
+let boardCols = 8;
+let gameStarted = false;
+let paused = false;
+let toggleClear = false;
+let stopClear;
+let toggleFall = false;
+let stopFall;
+let toggleSwitch = false;
+let stopSwitch;
+let colorChange = false;
+let loseCondition = false;
+let score = 0;
+let highScore = 0;
+let musicMute = false;
+let sfxMute = false;
+let board;
+let selected = null;
+let fallingTiles = [];
+let fixedTiles = [];
+
+///////////////////////// Color Info /////////////////////////
+
 const colors = [
     'red',
     'yellow',
@@ -23,6 +51,8 @@ const getColor = selection => {
     return colors[Math.floor(Math.random() * selection)];
 };
 
+///////////////////////// Class Definitions /////////////////////////
+
 class Tile {
     constructor(color, x, y) {
         this.x = x;
@@ -31,7 +61,7 @@ class Tile {
     }
 
     change() {
-        this.color = getColor(5)
+        this.color = getColor(difficulty)
     }
 }
 
@@ -72,7 +102,7 @@ class Column {
         });
     }
 
-    append(amount = this.nulls, selectionSize = 7) {
+    append(amount = this.nulls, selectionSize = difficulty) {
         const addition = [];
         for (let i = 0; i < amount; i++) {
             addition.push(
@@ -252,18 +282,22 @@ class ShatterParticle {
         this.hue = hue + (-.5 * this.hueVariance + Math.random() * this.hueVariance)
         this.startX = x
         this.startY = y
-        this.startTime = Date.now()
+        this.done = false
+        this.countedDone = false
     }
 
     // THIS CODE BASED ON: https://css-tricks.com/adding-particle-effects-to-dom-elements-with-canvas/
 
-    // Set how long we want our particle to animate for
-    animationDuration = 1000; // in ms
+    spreadAdjustment = window.innerWidth > window.innerHeight
+      ? 
+      window.innerHeight / 500
+      :
+      window.innerWidth / 500
 
     // Set the speed for our particle
     speed = {
-        x: -15 + Math.random() * 30,
-        y: -15 + Math.random() * 30
+        x: this.spreadAdjustment * (-10 + Math.random() * 20),
+        y: this.spreadAdjustment * (-10 + Math.random() * 20)
     };
 
     acceleration = {
@@ -290,23 +324,19 @@ class ShatterParticle {
     draw = ctx => {
         let p = this;
 
-        if(this.remainingLife > 0 && this.radius > 0) {
+        if(p.remainingLife > 0 && p.radius > 1) {
             // Draw a circle at the current location
             ctx.beginPath();
             ctx.arc(p.startX, p.startY, p.radius, 0, Math.PI * 2);
-            ctx.fillStyle = `hsl(${p.hue}, 100%, 50%)`;
-            ctx.shadowColor = `hsl(${p.hue}, 100%, 50%)`;
-            ctx.shadowBlur = 25;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
+            ctx.fillStyle = `hsl(${p.hue}, 100%, 70%)`;
+            if (graphicsLevel === "high") {
+              ctx.shadowColor = `hsl(${p.hue}, 100%, 70%)`;
+              ctx.shadowBlur = 25;
+              ctx.shadowOffsetX = 0;
+              ctx.shadowOffsetY = 0;
+            }
             ctx.fill();
             ctx.closePath();
-            ctx.beginPath();
-            ctx.arc(p.startX, p.startY, p.radius / 1.5, 0, Math.PI * 2);
-            ctx.fillStyle = `hsl(${p.hue}, 100%, 70%)`;
-            ctx.shadowColor = `hsl(${p.hue}, 100%, 70%)`;
-            ctx.shadowBlur = 10;
-            ctx.fill();
 
             // Update the particle's location and life
             p.remainingLife--;
@@ -316,6 +346,8 @@ class ShatterParticle {
             p.speed.x *= p.acceleration.x;
             p.speed.y *= p.acceleration.y;
             p.sizeChange *= p.sizeAcceleration;
+        } else {
+          p.done = true
         }
     }
 }
@@ -328,16 +360,48 @@ const canvas2 = document.querySelector('#canvas-2');
 const canvas3 = document.querySelector('#canvas-3');
 const canvasBg = document.querySelector('#canvas-bg');
 
-canvasFx.width = 640;
-canvasFx.height = 640;
-canvas1.width = 640;
-canvas1.height = 640;
-canvas2.width = 640;
-canvas2.height = 640;
-canvas3.width = 640;
-canvas3.height = 640;
-canvasBg.width = 640;
-canvasBg.height = 640;
+let screenWidth = window.innerWidth;
+let canvasWidth, canvasHeight, unit;
+
+function setCanvasDimensions() {
+  if (800 > screenWidth) {
+    canvasWidth = 320;
+    canvasHeight = 320;
+  } else if (1600 < screenWidth) {
+    canvasWidth = 640;
+    canvasHeight = 640;
+  } else {
+    canvasWidth = 0.4 * screenWidth;
+    canvasHeight = 0.4 * screenWidth;
+  }
+
+  unit = canvasWidth / boardRows;
+  
+  canvasFx.width = canvasWidth;
+  canvasFx.height = canvasHeight;
+  canvas1.width = canvasWidth;
+  canvas1.height = canvasHeight;
+  canvas2.width = canvasWidth;
+  canvas2.height = canvasHeight;
+  canvas3.width = canvasWidth;
+  canvas3.height = canvasHeight;
+  canvasBg.width = canvasWidth;
+  canvasBg.height = canvasHeight;
+  
+  if (gameStarted) {
+    renderBg();
+    renderFixed();
+  };
+}
+
+setCanvasDimensions();
+
+
+window.addEventListener("resize", () => {
+  screenWidth = window.innerWidth
+  setCanvasDimensions();
+})
+
 
 const cfx = canvasFx.getContext('2d'); 
 const c1 = canvas1.getContext('2d');
@@ -349,6 +413,9 @@ const canvasWrapper = document.querySelector('.canvas-wrapper');
 
 const scoreCounter = document.querySelector('#score-counter');
 scoreCounter.textContent = 0;
+
+const highScoreCounter = document.querySelector('#high-score-counter');
+highScoreCounter.textContent = 0;
 
 const debugButton = document.querySelector('#debug-button');
 const debugButton2 = document.querySelector('#debug-button-2');
@@ -377,51 +444,46 @@ const pauseScreen = document.querySelector('.pause');
 const pauseText = document.querySelector('.pause p');
 const pauseButton = document.querySelector('.pause button');
 
-///////////////////////// Application state /////////////////////////
-
-let unit = 80;
-let boardRows = 8;
-let boardCols = 8;
-let gameStarted = false;
-let paused = false;
-let toggleClear = false;
-let stopClear;
-let toggleFall = false;
-let stopFall;
-let toggleSwitch = false;
-let stopSwitch;
-let colorChange = false;
-let loseCondition = false;
-let score = 0;
-let musicMute = false;
-let sfxMute = false;
-let board;
-let selected = null;
-let fallingTiles = [];
-let fixedTiles = [];
-
-function initializeState() {
-    board = new Gameboard(boardRows, boardCols);
-    let matches = board.clearMatches();
-    while (matches.length) {
-        board.removeNulls();
-        matches = board.clearMatches();
-    }
-
-    gameStarted = false;
-    loseCondition = false;
-    paused = false;
-    toggleFall = false;
-    score = 0;
-    selected = null;
-    fallingTiles = [];
-}
+const images = {
+  red: new Image(),
+  blue: new Image(),
+  yellow: new Image(),
+  green: new Image(),
+  purple: new Image(),
+  orange: new Image(),
+  teal: new Image()
+};
+images.red.src = './assets/Red Gem.png';
+images.blue.src = './assets/Blue Gem.png';
+images.yellow.src = './assets/Yellow Gem.png';
+images.green.src = './assets/Green Gem.png';
+images.purple.src = './assets/Purple Gem.png';
+images.orange.src = './assets/Orange Gem.png';
+images.teal.src = './assets/Teal Gem.png';
 
 ///////////////////////// Logic /////////////////////////
 
 ///// Initialize /////
 
+function initializeState() {
+  board = new Gameboard(boardRows, boardCols);
+  let matches = board.clearMatches();
+  while (matches.length) {
+      board.removeNulls();
+      matches = board.clearMatches();
+  }
+
+  gameStarted = false;
+  loseCondition = false;
+  paused = false;
+  toggleFall = false;
+  score = 0;
+  selected = null;
+  fallingTiles = [];
+}
+
 function start() {
+    difficulty = nextDifficulty;
     initializeState();
     canvasWrapper.focus();
     scoreCounter.textContent = score;
@@ -440,6 +502,19 @@ function start() {
 function incrementScore(num) {
     score += num;
     scoreCounter.textContent = score;
+    if (highScore < score) {
+      highScore = score;
+      highScoreCounter.textContent = highScore;
+    }
+}
+
+///// Game Options /////
+function changeDifficulty(selected) {
+  nextDifficulty = Number(selected.value)
+}
+
+function setGraphics(level) {
+  graphicsLevel = level;
 }
 
 ///// Audio Options /////
@@ -472,23 +547,6 @@ function incrementScore(num) {
 
 ///// Render Board /////
 
-const images = {
-    red: new Image(),
-    blue: new Image(),
-    yellow: new Image(),
-    green: new Image(),
-    purple: new Image(),
-    orange: new Image(),
-    teal: new Image()
-};
-images.red.src = './assets/Red Gem.png';
-images.blue.src = './assets/Blue Gem.png';
-images.yellow.src = './assets/Yellow Gem.png';
-images.green.src = './assets/Green Gem.png';
-images.purple.src = './assets/Purple Gem.png';
-images.orange.src = './assets/Orange Gem.png';
-images.teal.src = './assets/Teal Gem.png';
-
 function drawTile(x, y, type, canvas) {
     let cv;
     if (canvas === 1) {
@@ -498,7 +556,7 @@ function drawTile(x, y, type, canvas) {
     } else {
         cv = c3;
     }
-    cv.drawImage(images[type], x, y);
+    cv.drawImage(images[type], x, y, unit, unit);
 }
 
 function drawRect(x, y) {
@@ -510,6 +568,10 @@ function drawRect(x, y) {
 }
 
 function renderBg() {
+    cbg.beginPath();
+    cbg.rect(0, 0, canvasWidth, canvasHeight);
+    cbg.fillStyle = '#1a1a1a';
+    cbg.fill();
     for (let x = 0; x < boardCols; x++) {
         for (let y = 0; y < boardRows; y++) {
             cbg.beginPath();
@@ -666,8 +728,9 @@ function startAnimateSwitch(callback, x, y, firstPass=true) {
 
 function startAnimateClear(callback, matches) {
     toggleClear = true;
-    let particlesPerTile = 40;
+    let particlesPerTile = Math.floor(120 / matches.length);
     let counter = 0; // used to call callback function early
+    let doneCounter = particlesPerTile * matches.length
     let particles = [];
 
     for(let i = 0; i < matches.length; i++) {
@@ -697,20 +760,20 @@ function startAnimateClear(callback, matches) {
 
         // Draw all of our particles in their new location
         for(let i = 0; i < particles.length; i++) {
-            particles[i].draw(cfx);
-            
-            // Simple way to clean up if the last particle is done animating
-            if(i === particles.length - 1) {
-                let percent = (Date.now() - particles[i].startTime) / particles[i].animationDuration;
-                if(percent > 1) {
-                    particles = [];
-                    cancelAnimationFrame(stopSwitch);
-                    toggleClear = false;
-                }
+            if (!particles[i].done) {
+              particles[i].draw(cfx);
+            } else if (!particles[i].countedDone) {
+              particles[i].countedDone = true
+              doneCounter--
             }
-        }        
+        }
+        if (doneCounter === 0 || counter > 1000) {
+          console.log("done")
+          particles = [];
+          cancelAnimationFrame(stopClear);
+          toggleClear = false;
+        }
         counter++;
-        
     }
 }
 
@@ -753,23 +816,22 @@ function startAnimateFall(callback, tileArray = board.getFalling(), fixedTileArr
             );
         });
         if (triggerFixed) {
-            console.log("DING")
             renderFixed(fixedTileArray);
         }
     }
 }
 
 
-debugButton.addEventListener('click', ev => {
+debugButton !== null && debugButton.addEventListener('click', ev => {
     ev.preventDefault();
 });
 
-debugButton.addEventListener('contextmenu', ev => {
+debugButton !== null && debugButton.addEventListener('contextmenu', ev => {
     ev.preventDefault();
     colorChange = true;
 });
 
-debugButton2.addEventListener('click', ev => {
+debugButton2 !== null && debugButton2.addEventListener('click', ev => {
     ev.preventDefault();
     console.log(
         'STATE:\n',

@@ -10,13 +10,18 @@ audio {
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    margin-top: 50px;
+    width: 100%;
+    margin-top: 6%;
     font-family: 'Teko', sans-serif;
 }
 .canvas-wrapper {
     position: relative;
-    width: 640px;
-    height: 640px;
+    max-width: 640px;
+    max-height: 640px;
+    min-width: 320px;
+    min-height: 320px;
+    width: 40vw;
+    height: 40vw;
     border: 10px solid #110133;
     border-radius: 10px;
     background-color: #4dd599;
@@ -30,27 +35,31 @@ audio {
 .overlay {
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    padding-top: 250px;
+    justify-content: center;
     position: absolute;
     background: rgba(88, 88, 88, 0.5);
-    width: 640px;
-    height: 640px;
+    max-width: 640px;
+    max-height: 640px;
+    min-width: 320px;
+    min-height: 320px;
+    width: 40vw;
+    height: 40vw;
     user-select: none;
     z-index: 6;
 }
 .overlay-innerbox {
     display: flex;
+    height: 35%;
     flex-direction: column;
+    justify-content: space-evenly;
     align-items: center;
     border-top: 10px solid #110133;
     border-bottom: 10px solid #110133;
     background: #1d4d4f;
-    padding: 30px 0 40px;
 }
 .overlay-innerbox p {
     color: white;
-    font-size: 80px;
+    font-size: 5vw;
     letter-spacing: 1px;
     margin: 0;
 }
@@ -58,7 +67,7 @@ audio {
     padding: 7px 40px;
     margin: 0;
     border: 1px solid #110133;
-    font: 24px 'Share Tech Mono', monospace;
+    font: 2vw 'Share Tech Mono', monospace;
     letter-spacing: -1px;
     color: rgb(228, 228, 228);
 
@@ -86,7 +95,22 @@ audio {
     text-shadow: none;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3) inset;
 }
-
+@media screen and (min-width: 1600px) {
+  .overlay-innerbox p {
+    font-size: 80px;
+  }
+  .overlay-innerbox button {
+    font-size: 30px;
+  }
+}
+@media screen and (max-width: 800px) {
+  .overlay-innerbox p {
+    font-size: 40px;
+  }
+  .overlay-innerbox button {
+    font-size: 17px;
+  }
+}
 #canvas-fx {
     position: absolute;
     z-index: 5;
@@ -107,24 +131,107 @@ audio {
 }
 #canvas-bg {
     position: absolute;
+    border: 1px solid #1a1a1a;
     z-index: 1;
+}
+.game-data {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex-grow: 1;
 }
 .scorecard {
     background: rgb(236, 236, 236);
     border-radius: 10px;
-    box-shadow: 0px 0px 4px 0px;
-    width: 160px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 2px 2px -1px rgba(0, 0, 0, 0.5),
+      0 1px 0 rgba(255, 255, 255, 0.3) inset;    width: 50%;
+    width: 149px;
     margin: 10px 20px;
-    padding: 10px 20px;
+    padding: 10px 0 10px 15px;
     font-family: serif;
-    font-size: 24px;
+    font-size: 18px;
     user-select: none;
 }
 .scorecard span {
-    padding-left: 10px;
+    padding-left: 5px;
 }
 .options {
-  width: 160px;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-end;
+    flex-grow: 1;
+}
+.options button {
+    width: 166px;
+    padding: 7px 15px;
+    margin: 10px 20px;
+    border: 1px solid #110133;
+    font-family: serif;
+    font-size: 18px;
+    color: rgb(228, 228, 228);
+
+    background-color: rgb(0, 44, 138);
+    background-image: linear-gradient(rgb(16, 104, 163), rgba(0, 161, 13, 0));
+
+    transition: background-color 0.2s ease-out;
+    border-radius: 10px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 2px 2px -1px rgba(0, 0, 0, 0.5),
+        0 1px 0 rgba(255, 255, 255, 0.3) inset;
+    text-shadow: 0 1px 2px rgba(80, 80, 80, 0.9);
+
+    outline: none;
+    user-select: none;
+    cursor: pointer;
+}
+.options .diff-select {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    background: rgb(236, 236, 236);
+    padding: 7px 15px;
+    margin: 10px 20px;
+    width: 134px;
+    border-radius: 10px;
+    color: black;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 2px 2px -1px rgba(0, 0, 0, 0.5),
+      0 1px 0 rgba(255, 255, 255, 0.3) inset;
+    font-family: serif;
+    font-size: 18px;
+    user-select: none;
+}
+.options .diff-select select {
+    padding: 5px 3px;
+    border-radius: 10px;
+    outline: none;
+    user-select: none;
+    cursor: pointer;
+}
+.options .graphics-select {
+  display: flex;
+  flex-wrap: wrap;
+  width: 134px;
+  border-radius: 10px;
+  color: black;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 2px 2px -1px rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.3) inset;
+  background: rgb(236, 236, 236);
+  padding: 7px 15px;
+  margin: 10px 20px;
+  font-family: serif;
+  font-size: 18px;
+  user-select: none;
+}
+.options .graphics-select p {
+  width: 100%;
+  margin: 7px 0 0;
+  text-align: center;
+}
+.options .graphics-select label {
+  flex-grow: 1;
+  font-size: 14px;
+  padding: 7px 0;
+  text-align: center;
 }
 .toggle {
     position: relative;
@@ -226,6 +333,30 @@ audio {
 .instructions p {
     margin: 18px 0;
 }
+
 .load-images {
     visibility: hidden;
+}
+
+@media screen and (orientation: portrait) {
+  .app {
+    flex-direction: column;
+    align-items: center;
+  }
+  .game-data {
+    transform: scale(.9);
+    flex-direction: row;
+    justify-content: center;
+    align-items: stretch;
+    width: 100%;
+    font-size: 16px;
+  }
+  .options {
+    transform: scale(.9);
+    order: 1;
+    flex-direction: row;
+    justify-content: center;
+    align-items: stretch;
+    width: 100%;
+  }
 }
