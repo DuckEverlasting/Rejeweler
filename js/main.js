@@ -402,6 +402,11 @@ window.addEventListener("resize", () => {
   setCanvasDimensions();
 })
 
+const canVibrate = "vibrate" in navigator || "mozVibrate" in navigator;
+
+if (canVibrate && !("vibrate" in navigator)) {
+    navigator.vibrate = navigator.mozVibrate;
+}
 
 const cfx = canvasFx.getContext('2d'); 
 const c1 = canvas1.getContext('2d');
@@ -483,6 +488,7 @@ function initializeState() {
 }
 
 function start() {
+    navigator.vibrate(30);
     difficulty = nextDifficulty;
     initializeState();
     canvasWrapper.focus();
@@ -639,6 +645,7 @@ canvas1.addEventListener('contextmenu', function(ev) {
 
 function startTurn(x, y) {
     if (selected === null) {
+        navigator.vibrate(30);
         drawRect(x, y);
         selected = [x, y];
     } else if (selected[0] === x && selected[1] === y) {
@@ -648,6 +655,7 @@ function startTurn(x, y) {
         (selected[0] === x && Math.abs(selected[1] - y) === 1) ||
         (selected[1] === y && Math.abs(selected[0] - x) === 1)
     ) {
+        navigator.vibrate(30);
         selected === null
         board.switch(selected[0], selected[1], x, y);
         c1.clearRect(0, 0, canvas1.width, canvas1.height);
@@ -768,7 +776,6 @@ function startAnimateClear(callback, matches) {
             }
         }
         if (doneCounter === 0 || counter > 1000) {
-          console.log("done")
           particles = [];
           cancelAnimationFrame(stopClear);
           toggleClear = false;
