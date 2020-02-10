@@ -2,6 +2,7 @@ body {
     background: rgb(148, 148, 148);
     margin: 0;
     width: 100%;
+    overscroll-behavior: contain;
 }
 audio {
     display: none;

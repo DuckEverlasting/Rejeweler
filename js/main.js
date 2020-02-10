@@ -696,7 +696,6 @@ function startTurnMobile(x, y) {
   canvas1.addEventListener('touchcancel', removeListeners);
   
   function dragSelected(ev) {
-    ev.preventDefault();
     const rect = ev.target.getBoundingClientRect();
     const offsetX = ev.targetTouches[0].pageX - rect.left;
     const offsetY = ev.targetTouches[0].pageY - rect.top;
