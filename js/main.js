@@ -639,6 +639,17 @@ canvas1.addEventListener('mousedown', function(ev) {
     startTurn(x, y);
 });
 
+canvas1.addEventListener('touchstart', function(ev) {
+  if (toggleFall || toggleClear || toggleSwitch) return;
+
+  const rect = ev.target.getBoundingClientRect();
+  const offsetX = ev.targetTouches[0].pageX - rect.left;
+  const offsetY = ev.targetTouches[0].pageY - rect.top;
+
+  const { x, y } = getTile(offsetX, offsetY);
+  startTurnMobile(x, y);
+});
+
 canvas1.addEventListener('contextmenu', function(ev) {
     ev.preventDefault()
     if (!colorChange) return;
@@ -677,6 +688,40 @@ function startTurn(x, y) {
     canvas1.removeEventListener('mouseout', removeListeners)
   }
 }
+
+function startTurnMobile(x, y) {
+  selected = [x, y];
+  canvas1.addEventListener('touchmove', dragSelected);
+  canvas1.addEventListener('touchend', removeListeners);
+  canvas1.addEventListener('touchcancel', removeListeners);
+  
+  function dragSelected(ev) {
+    const rect = ev.target.getBoundingClientRect();
+    const offsetX = ev.targetTouches[0].pageX - rect.left;
+    const offsetY = ev.targetTouches[0].pageY - rect.top;
+    const { x:newX, y:newY } = getTile(offsetX, offsetY);
+    if (newX === x && newY === y) {
+      return;
+    } else if (
+      (x === newX && Math.abs(y - newY) === 1) ||
+      (y === newY && Math.abs(x - newX) === 1)
+    ) {
+      removeListeners();
+      board.switch(x, y, newX, newY);
+      c1.clearRect(0, 0, canvas1.width, canvas1.height);
+      startAnimateSwitch(clearTiles, newX, newY)
+    } else {
+      removeListeners();
+    }
+  }
+
+  function removeListeners() {
+    canvas1.removeEventListener('touchmove', dragSelected)
+    canvas1.removeEventListener('touchend', removeListeners)
+    canvas1.removeEventListener('touchcancel', removeListeners)
+  }
+}
+
 
 // function startTurn(x, y) {
 //     if (selected === null) {
