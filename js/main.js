@@ -625,11 +625,17 @@ function gameOver() {
 }
 
 //// Handle input ////
-canvas1.addEventListener('click', function(ev) {
+function getTile(offsetX, offsetY) {
+  return {
+    x: Math.floor(offsetX / unit),
+    y: Math.floor((canvas1.height - offsetY) / unit)
+  }
+}
+
+canvas1.addEventListener('mousedown', function(ev) {
     if (toggleFall || toggleClear || toggleSwitch) return;
 
-    x = Math.floor(ev.offsetX / unit);
-    y = Math.floor((canvas1.height - ev.offsetY) / unit);
+    const { x, y } = getTile(ev.offsetX, ev.offsetY);
     startTurn(x, y);
 });
 
@@ -637,31 +643,60 @@ canvas1.addEventListener('contextmenu', function(ev) {
     ev.preventDefault()
     if (!colorChange) return;
 
-    x = Math.floor(ev.offsetX / unit);
-    y = Math.floor((canvas1.height - ev.offsetY) / unit);
+    const { x, y } = getTile(ev.offsetX, ev.offsetY);
     board.tile(x, y).change();
     renderFixed();
 });
 
 function startTurn(x, y) {
-    if (selected === null) {
-        navigator.vibrate(30);
-        drawRect(x, y);
-        selected = [x, y];
-    } else if (selected[0] === x && selected[1] === y) {
-        c1.clearRect(0, 0, canvas1.width, canvas1.height);
-        selected = null;
+  selected = [x, y];
+  canvas1.addEventListener('mousemove', dragSelected);
+  canvas1.addEventListener('mouseup', removeListeners);
+  canvas1.addEventListener('mouseout', removeListeners);
+  
+  function dragSelected(ev) {
+    const { x:newX, y:newY } = getTile(ev.offsetX, ev.offsetY);
+    if (newX === x && newY === y) {
+      return;
     } else if (
-        (selected[0] === x && Math.abs(selected[1] - y) === 1) ||
-        (selected[1] === y && Math.abs(selected[0] - x) === 1)
+      (x === newX && Math.abs(y - newY) === 1) ||
+      (y === newY && Math.abs(x - newX) === 1)
     ) {
-        navigator.vibrate(30);
-        selected === null
-        board.switch(selected[0], selected[1], x, y);
-        c1.clearRect(0, 0, canvas1.width, canvas1.height);
-        startAnimateSwitch(clearTiles, x, y)
+      removeListeners();
+      board.switch(x, y, newX, newY);
+      c1.clearRect(0, 0, canvas1.width, canvas1.height);
+      startAnimateSwitch(clearTiles, newX, newY)
+    } else {
+      removeListeners();
     }
+  }
+
+  function removeListeners() {
+    canvas1.removeEventListener('mousemove', dragSelected)
+    canvas1.removeEventListener('mouseup', removeListeners)
+    canvas1.removeEventListener('mouseout', removeListeners)
+  }
 }
+
+// function startTurn(x, y) {
+//     if (selected === null) {
+//         navigator.vibrate(30);
+//         drawRect(x, y);
+//         selected = [x, y];
+//     } else if (selected[0] === x && selected[1] === y) {
+//         c1.clearRect(0, 0, canvas1.width, canvas1.height);
+//         selected = null;
+//     } else if (
+//         (selected[0] === x && Math.abs(selected[1] - y) === 1) ||
+//         (selected[1] === y && Math.abs(selected[0] - x) === 1)
+//     ) {
+//         navigator.vibrate(30);
+//         selected === null
+//         board.switch(selected[0], selected[1], x, y);
+//         c1.clearRect(0, 0, canvas1.width, canvas1.height);
+//         startAnimateSwitch(clearTiles, x, y)
+//     }
+// }
 
 function clearTiles() {
     board.removeNulls();
